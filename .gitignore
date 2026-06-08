@@ -1,0 +1,11 @@
+node_modules/
+.env
+backend/.env
+backend/alphalens.db
+backend/folio.db
+backend/uploads/
+backend/__pycache__/
+*.pyc
+.DS_Store
+dist/
+build/
