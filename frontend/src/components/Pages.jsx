@@ -164,8 +164,9 @@ function RevenueChart({ ticker }) {
   );
 }
 
-function Section({num,name,children,defaultOpen}){
+function Section({num,name,children,defaultOpen,forceOpen}){
   const [open,setOpen]=useState(defaultOpen);
+  useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
     <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
@@ -182,8 +183,14 @@ function Section({num,name,children,defaultOpen}){
 
 export function ReportPage({report,onNew,onHistory}){
   const reportRef = useRef(null);
+  const [allOpen, setAllOpen] = useState(false);
 
   const handleDownloadPDF = async () => {
+    // Expand all sections and hide buttons
+    setAllOpen(true);
+    const btns = document.getElementById("report-action-buttons");
+    if (btns) btns.style.visibility = "hidden";
+    await new Promise(r => setTimeout(r, 800));
     const element = reportRef.current;
     if (!element) return;
     const canvas = await html2canvas(element, {
@@ -192,6 +199,9 @@ export function ReportPage({report,onNew,onHistory}){
       backgroundColor: "#faf8f4",
       logging: false,
     });
+    // Restore buttons
+    if (btns) btns.style.visibility = "visible";
+    setAllOpen(false);
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -417,7 +427,7 @@ export function ReportPage({report,onNew,onHistory}){
       </div>
 
       <div>
-        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0}>{s.content}</Section>)}
+        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0} forceOpen={allOpen}>{s.content}</Section>)}
       </div>
 
       <div style={{marginTop:20,padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:6,fontFamily:FONTS.mono,fontSize:9,color:"#ccc",lineHeight:1.6}}>
