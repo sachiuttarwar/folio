@@ -267,7 +267,7 @@ DOCUMENT SECTIONS FROM 10-K FILING:
 {doc_content if doc_content else "No documents uploaded — base analysis on financial data above."}
 
 Return ONLY this JSON (no backticks):
-{"executiveSummary":["b1","b2","b3","b4","b5"],"companyOverview":"string","financialPerformance":"string","industryPositioning":"string","keyRisks":["r1","r2","r3","r4","r5"],"bullCase":"string","bearCase":"string","baseCase":"string","valuationDiscussion":"string","recommendation":"BUY|HOLD|AVOID","confidence":"LOW|MEDIUM|HIGH","recommendationRationale":"string","investmentSignals":[{"signal":"string","direction":"positive|negative|neutral","detail":"string"}],"investmentImplications":"string","financialMetrics":[{"label":"string","value":"string","trend":"up|down|neutral"}]}"""
+{{"executiveSummary":["b1","b2","b3","b4","b5"],"companyOverview":"string","financialPerformance":"string","industryPositioning":"string","keyRisks":["r1","r2","r3","r4","r5"],"bullCase":"string","bearCase":"string","baseCase":"string","valuationDiscussion":"string","recommendation":"BUY|HOLD|AVOID","confidence":"LOW|MEDIUM|HIGH","recommendationRationale":"string","investmentSignals":[{{"signal":"string","direction":"positive|negative|neutral","detail":"string"}}],"investmentImplications":"string","financialMetrics":[{{"label":"string","value":"string","trend":"up|down|neutral"}}]}}"""
 
 @app.get("/health")
 def health():
