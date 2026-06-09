@@ -287,6 +287,37 @@ def get_financials(ticker: str):
     except Exception as e:
         return {"error": str(e)}
 
+
+@app.get("/compare/{tickers}")
+def compare_peers(tickers: str):
+    try:
+        ticker_list = [t.strip() for t in tickers.split(",") if t.strip()]
+        results = []
+        for ticker in ticker_list[:6]:
+            try:
+                stock = yf.Ticker(ticker)
+                info = stock.info
+                def pct(v): return round(v*100, 1) if v is not None else None
+                def bil(v): return round(v/1e9, 1) if v is not None else None
+                results.append({
+                    "ticker": ticker,
+                    "name": info.get("shortName", ticker),
+                    "marketCap": bil(info.get("marketCap")),
+                    "revenue": bil(info.get("totalRevenue")),
+                    "revenueGrowth": pct(info.get("revenueGrowth")),
+                    "grossMargin": pct(info.get("grossMargins")),
+                    "operatingMargin": pct(info.get("operatingMargins")),
+                    "peRatio": info.get("trailingPE"),
+                    "forwardPE": info.get("forwardPE"),
+                    "evRevenue": info.get("enterpriseToRevenue"),
+                    "recommendation": info.get("recommendationKey","N/A").upper(),
+                })
+            except Exception:
+                results.append({"ticker": ticker, "name": ticker, "error": True})
+        return {"peers": results}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "Folio"}
