@@ -269,6 +269,24 @@ DOCUMENT SECTIONS FROM 10-K FILING:
 Return ONLY this JSON (no backticks):
 {{"executiveSummary":["b1","b2","b3","b4","b5"],"companyOverview":"string","financialPerformance":"string","industryPositioning":"string","keyRisks":["r1","r2","r3","r4","r5"],"bullCase":"string","bearCase":"string","baseCase":"string","valuationDiscussion":"string","recommendation":"BUY|HOLD|AVOID","confidence":"LOW|MEDIUM|HIGH","recommendationRationale":"string","investmentSignals":[{{"signal":"string","direction":"positive|negative|neutral","detail":"string"}}],"investmentImplications":"string","financialMetrics":[{{"label":"string","value":"string","trend":"up|down|neutral"}}]}}"""
 
+
+@app.get("/financials/{ticker}")
+def get_financials(ticker: str):
+    try:
+        stock = yf.Ticker(ticker)
+        income = stock.financials
+        if income.empty:
+            return {"error": "No data"}
+        rows = {}
+        for idx in income.index:
+            rows[idx] = {}
+            for col in income.columns:
+                val = income.loc[idx, col]
+                rows[idx][str(col.date())] = float(val) if val is not None and str(val) != "nan" else None
+        return {"financials": rows}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "Folio"}
