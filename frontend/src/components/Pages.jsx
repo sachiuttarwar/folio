@@ -34,6 +34,66 @@ export function GeneratingPage() {
   );
 }
 
+
+function PeerTable({ ticker, peers }) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!ticker || !peers) { setLoading(false); return; }
+    const peerList = peers.split(",").map(p => p.trim()).filter(Boolean);
+    const allTickers = [ticker, ...peerList].join(",");
+    fetch(`${API}/compare/${allTickers}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.error || !json.peers) { setLoading(false); return; }
+        setData(json.peers);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [ticker, peers]);
+
+  if (loading) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>Loading peer data...</div>;
+  if (!data.length) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>No peer data available.</div>;
+
+  const cols = ["ticker","name","marketCap","revenue","revenueGrowth","grossMargin","operatingMargin","peRatio","forwardPE"];
+  const labels = {"ticker":"Ticker","name":"Company","marketCap":"Mkt Cap ($B)","revenue":"Revenue ($B)","revenueGrowth":"Rev Growth","grossMargin":"Gross Margin","operatingMargin":"Op Margin","peRatio":"P/E","forwardPE":"Fwd P/E"};
+
+  const fmt = (key, val) => {
+    if (val === null || val === undefined) return "—";
+    if (["revenueGrowth","grossMargin","operatingMargin"].includes(key)) return `${val}%`;
+    if (["peRatio","forwardPE"].includes(key)) return typeof val === "number" ? val.toFixed(1)+"x" : val;
+    return val;
+  };
+
+  return (
+    <div style={{overflowX:"auto"}}>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,fontFamily:"'JetBrains Mono',monospace"}}>
+        <thead>
+          <tr style={{borderBottom:"0.5px solid #e4e0d8"}}>
+            {cols.map(c => (
+              <th key={c} style={{padding:"8px 12px",textAlign:"left",fontSize:9,color:"#aaa",letterSpacing:"0.08em",textTransform:"uppercase",fontWeight:500,whiteSpace:"nowrap"}}>{labels[c]}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, i) => (
+            <tr key={i} style={{borderBottom:"0.5px solid #f0ece4",background:row.ticker===ticker?"#fdfcfa":"#fff"}}
+              onMouseEnter={e=>e.currentTarget.style.background="#faf8f4"}
+              onMouseLeave={e=>e.currentTarget.style.background=row.ticker===ticker?"#fdfcfa":"#fff"}>
+              {cols.map(c => (
+                <td key={c} style={{padding:"10px 12px",color:c==="ticker"&&row.ticker===ticker?"#111":"#444",fontWeight:c==="ticker"&&row.ticker===ticker?600:400,whiteSpace:"nowrap"}}>
+                  {fmt(c, row[c])}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function RevenueChart({ ticker }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -238,6 +298,9 @@ export function ReportPage({report,onNew,onHistory}){
     )},
     {num:"N",name:"Revenue & Margin Trends",content:(
       <RevenueChart ticker={meta.ticker} />
+    )},
+    {num:"O",name:"Peer Comparison",content:(
+      <PeerTable ticker={meta.ticker} peers={meta.peers} />
     )},
   ];
 
