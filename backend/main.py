@@ -387,7 +387,8 @@ BUSINESS SECTIONS:
         raw = claude_generate(prompt, "You are parsing a financial document. Return only valid JSON, no markdown.")
         clean = raw.replace("```json","").replace("```","").strip()
         info = json.loads(clean)
-    except Exception:
+    except Exception as e:
+        print(f"Autofill parse error: {e}")
         info = {"companyName": "", "ticker": "", "industry": "", "peers": ""}
     return {
         "companyName": info.get("companyName","") or company_regex,
