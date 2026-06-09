@@ -302,6 +302,36 @@ export function ReportPage({report,onNew,onHistory}){
     {num:"O",name:"Peer Comparison",content:(
       <PeerTable ticker={meta.ticker} peers={meta.peers} />
     )},
+    {num:"P",name:"Recommendation Scorecard",content:(
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        {(r.recommendationScorecard||[]).map((item,i)=>{
+          const pct = (item.score/item.maxScore)*100;
+          const color = pct>=70?"#1a6b3a":pct>=40?"#7a5a10":"#7a2020";
+          const bg = pct>=70?"#f0f9f4":pct>=40?"#fdf8ec":"#fdf3f3";
+          const border = pct>=70?"#c0dfc8":pct>=40?"#e8d4a0":"#e0c4c4";
+          return(
+            <div key={i} style={{background:bg,border:`0.5px solid ${border}`,borderRadius:8,padding:"14px 16px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <span style={{fontSize:13,fontWeight:500,color:"#111"}}>{item.factor}</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color,fontWeight:600}}>{item.score}/{item.maxScore}</span>
+              </div>
+              <div style={{height:4,background:"#eee",borderRadius:2,marginBottom:8}}>
+                <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:2,transition:"width 0.6s ease"}}/>
+              </div>
+              <p style={{fontSize:12,color:"#666",margin:0,lineHeight:1.65}}>{item.rationale}</p>
+            </div>
+          );
+        })}
+        {(r.recommendationScorecard||[]).length>0&&(
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:8}}>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#aaa",letterSpacing:"0.08em",textTransform:"uppercase"}}>Overall Score</span>
+            <span style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#111"}}>
+              {r.recommendationScorecard.reduce((a,b)=>a+b.score,0)} / {r.recommendationScorecard.reduce((a,b)=>a+b.maxScore,0)}
+            </span>
+          </div>
+        )}
+      </div>
+    )},
   ];
 
   return(
