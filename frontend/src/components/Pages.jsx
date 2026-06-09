@@ -190,7 +190,7 @@ export function ReportPage({report,onNew,onHistory}){
     setAllOpen(true);
     const btns = document.getElementById("report-action-buttons");
     if (btns) btns.style.visibility = "hidden";
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise(r => setTimeout(r, 5000));
     const element = reportRef.current;
     if (!element) return;
     const canvas = await html2canvas(element, {
