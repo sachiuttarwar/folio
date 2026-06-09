@@ -219,9 +219,6 @@ export function ReportPage({report,onNew,onHistory}){
         <p style={{fontSize:13,color:"#444",lineHeight:1.85,margin:0}}>{r.investmentImplications}</p>
       </div>
     )},
-    {num:"N",name:"Revenue & Margin Trends",content:(
-      <RevenueChart ticker={meta.ticker} />
-    )},
     {num:"M",name:"Financial Metrics",content:(
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
         {(r.financialMetrics||[]).map((m,i)=>{
@@ -238,6 +235,9 @@ export function ReportPage({report,onNew,onHistory}){
           );
         })}
       </div>
+    )},
+    {num:"N",name:"Revenue & Margin Trends",content:(
+      <RevenueChart ticker={meta.ticker} />
     )},
   ];
 
