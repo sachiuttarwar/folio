@@ -1,4 +1,4 @@
-export default function LandingPage({ onStart, onExample }) {
+export default function LandingPage({ onStart }) {
   const steps = [
     { num: "01", title: "Upload Filings", desc: "10-K, 10-Q, transcripts, or presentations" },
     { num: "02", title: "Company Details", desc: "Ticker, industry, research parameters" },
@@ -22,9 +22,7 @@ export default function LandingPage({ onStart, onExample }) {
         <button onClick={onStart} style={{ background: "#111", color: "#faf8f4", border: "none", padding: "12px 32px", borderRadius: 4, fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: "0.02em" }}>
           New Report
         </button>
-        <button onClick={onExample} style={{ background: "transparent", color: "#888", border: "0.5px solid #d0ccc4", padding: "12px 32px", borderRadius: 4, fontFamily: "'Inter', sans-serif", fontSize: 13, cursor: "pointer" }}>
-          View Example
-        </button>
+
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, maxWidth: 680, width: "100%", border: "0.5px solid #ddd", borderRadius: 8, overflow: "hidden" }}>
         {steps.map((s, i) => (
