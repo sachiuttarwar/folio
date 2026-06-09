@@ -162,8 +162,9 @@ function RevenueChart({ ticker }) {
   );
 }
 
-function Section({num,name,children,defaultOpen}){
+function Section({num,name,children,defaultOpen,forceOpen}){
   const [open,setOpen]=useState(defaultOpen);
+  useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
     <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
@@ -179,6 +180,46 @@ function Section({num,name,children,defaultOpen}){
 }
 
 export function ReportPage({report,onNew,onHistory}){
+  const reportRef = useRef(null);
+  const [allOpen, setAllOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setExporting(true);
+    setAllOpen(true);
+    // Hide buttons during capture
+    const btns = document.getElementById("report-action-buttons");
+    if (btns) btns.style.display = "none";
+    await new Promise(r => setTimeout(r, 800));
+    const element = reportRef.current;
+    if (!element) { setExporting(false); return; }
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#faf8f4",
+      logging: false,
+    });
+    if (btns) btns.style.display = "flex";
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const ratio = pdfWidth / canvas.width;
+    const totalHeight = canvas.height * ratio;
+    let position = 0;
+    let page = 0;
+    while (position < totalHeight) {
+      if (page > 0) pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, totalHeight);
+      position += pdfHeight;
+      page++;
+    }
+    pdf.save(`${report.company_name || "report"}-folio.pdf`);
+    setAllOpen(false);
+    setExporting(false);
+  };
+
+
   const r=report.report||report;
   const meta=report;
   const recColor={BUY:"#1a6b3a",HOLD:"#7a5a10",AVOID:"#7a2020","NEEDS MORE RESEARCH":"#555"}[r.recommendation]||"#333";
@@ -335,7 +376,7 @@ export function ReportPage({report,onNew,onHistory}){
   ];
 
   return(
-    <div style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
+    <div ref={reportRef} style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
 
       {/* Report header */}
       <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:20,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
@@ -376,14 +417,15 @@ export function ReportPage({report,onNew,onHistory}){
         )}
       </div>
 
-      <div style={{display:"flex",gap:8,marginBottom:24}}>
+      <div id="report-action-buttons" style={{display:"flex",gap:8,marginBottom:24}}>
         {[["+ New Report",onNew],["Research Library",onHistory]].map(([label,fn])=>(
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
+        <button onClick={handleDownloadPDF} disabled={exporting} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:exporting?"wait":"pointer",marginLeft:"auto",opacity:exporting?0.6:1}}>{exporting?"Generating...":"↓ Download PDF"}</button>
       </div>
 
       <div>
-        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0}>{s.content}</Section>)}
+        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0} forceOpen={allOpen}>{s.content}</Section>)}
       </div>
 
       <div style={{marginTop:20,padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:6,fontFamily:FONTS.mono,fontSize:9,color:"#ccc",lineHeight:1.6}}>
