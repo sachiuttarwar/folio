@@ -42,7 +42,7 @@ function PeerTable({ ticker, peers }) {
   useEffect(() => {
     if (!ticker || !peers) { setLoading(false); return; }
     const peerList = peers.split(",").map(p => p.trim()).filter(Boolean);
-    const allTickers = [ticker, ...peerList].join(",");
+    const allTickers = encodeURIComponent([ticker, ...peerList].join(","));
     fetch(`${API}/compare/${allTickers}`)
       .then(r => r.json())
       .then(json => {
