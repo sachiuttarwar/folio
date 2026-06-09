@@ -13,7 +13,7 @@ const DEPTHS = [
   { value: "detailed", label: "Detailed", desc: "Full analyst depth" },
 ];
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const S = {
   label: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#999", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 },
