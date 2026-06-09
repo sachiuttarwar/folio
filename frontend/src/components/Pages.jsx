@@ -409,7 +409,7 @@ export function ReportPage({report,onNew,onHistory}){
         )}
       </div>
 
-      <div style={{display:"flex",gap:8,marginBottom:24}}>
+      <div id="report-action-buttons" style={{display:"flex",gap:8,marginBottom:24}}>
         {[["+ New Report",onNew],["Research Library",onHistory]].map(([label,fn])=>(
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
