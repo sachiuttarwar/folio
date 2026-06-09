@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { useState, useEffect } from "react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -164,125 +162,8 @@ function RevenueChart({ ticker }) {
   );
 }
 
-
-function PrintReport({ report }) {
-  const r = report.report || report;
-  const meta = report;
-  const recColor = {BUY:"#1a6b3a",HOLD:"#7a5a10",AVOID:"#7a2020"}[r.recommendation]||"#333";
-
-  return (
-    <div id="folio-print-view" style={{width:800,background:"#fff",padding:"48px 56px",fontFamily:"'Inter',sans-serif",color:"#111"}}>
-      {/* Cover */}
-      <div style={{borderBottom:"2px solid #111",paddingBottom:24,marginBottom:32}}>
-        <div style={{fontSize:10,letterSpacing:"0.14em",color:"#888",marginBottom:8,fontFamily:"'JetBrains Mono',monospace"}}>FOLIO · EQUITY RESEARCH</div>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:36,fontWeight:400,marginBottom:8}}>{meta.company_name}</div>
-        <div style={{display:"flex",gap:16,fontSize:12,color:"#666"}}>
-          <span>{meta.ticker}</span>
-          <span>·</span>
-          <span>{meta.industry}</span>
-          <span>·</span>
-          <span>{meta.date}</span>
-        </div>
-      </div>
-
-      {/* Verdict */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:24,marginBottom:40,padding:"20px 0",borderBottom:"0.5px solid #eee"}}>
-        {[
-          ["RECOMMENDATION", r.recommendation, recColor],
-          ["CONFIDENCE", r.confidence, "#555"],
-          ["PERSPECTIVE", meta.perspective?.toUpperCase(), "#555"],
-        ].map(([label,val,color])=>(
-          <div key={label}>
-            <div style={{fontSize:9,letterSpacing:"0.12em",color:"#aaa",marginBottom:6,fontFamily:"'JetBrains Mono',monospace"}}>{label}</div>
-            <div style={{fontFamily:"'Playfair Display',serif",fontSize:24,color}}>{val}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Sections */}
-      {[
-        ["A. Executive Summary", (r.executiveSummary||[]).map((b,i)=><p key={i} style={{margin:"0 0 12px",fontSize:13,lineHeight:1.75,color:"#333"}}>— {b}</p>)],
-        ["B. Company Overview", <p style={{fontSize:13,lineHeight:1.85,color:"#333"}}>{r.companyOverview}</p>],
-        ["C. Financial Performance", <p style={{fontSize:13,lineHeight:1.85,color:"#333"}}>{r.financialPerformance}</p>],
-        ["D. Industry & Competitive Positioning", <p style={{fontSize:13,lineHeight:1.85,color:"#333"}}>{r.industryPositioning}</p>],
-        ["E. Key Risks", (r.keyRisks||[]).map((risk,i)=><p key={i} style={{margin:"0 0 10px",fontSize:13,lineHeight:1.75,color:"#333"}}>— {risk}</p>)],
-        ["F–H. Upside / Base / Downside Case",
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:16}}>
-            {[["↑ Upside",r.bullCase,"#f0f9f4","#1a6b3a"],["→ Base",r.baseCase,"#f3f4f8","#3a4a7a"],["↓ Downside",r.bearCase,"#fdf3f3","#7a2020"]].map(([l,t,bg,c])=>(
-              <div key={l} style={{background:bg,borderRadius:6,padding:"12px 14px"}}>
-                <div style={{fontSize:9,color:c,letterSpacing:"0.1em",marginBottom:8,fontFamily:"'JetBrains Mono',monospace"}}>{l}</div>
-                <p style={{fontSize:12,lineHeight:1.7,margin:0,color:"#444"}}>{t}</p>
-              </div>
-            ))}
-          </div>
-        ],
-        ["I. Valuation Discussion", <p style={{fontSize:13,lineHeight:1.85,color:"#333"}}>{r.valuationDiscussion}</p>],
-        ["J. Investment Memo Conclusion", <p style={{fontSize:13,lineHeight:1.85,color:"#333"}}>{r.recommendationRationale}</p>],
-        ["K. Investment Signals",
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {(r.investmentSignals||[]).map((s,i)=>{
-              const color={positive:"#1a6b3a",negative:"#7a2020",neutral:"#555"}[s.direction]||"#555";
-              return <div key={i} style={{padding:"10px 14px",background:"#fafafa",borderLeft:`3px solid ${color}`,borderRadius:4}}>
-                <div style={{fontSize:10,color,letterSpacing:"0.08em",marginBottom:4,fontFamily:"'JetBrains Mono',monospace"}}>{s.direction?.toUpperCase()} · {s.signal}</div>
-                <p style={{fontSize:12,color:"#555",margin:0,lineHeight:1.65}}>{s.detail}</p>
-              </div>;
-            })}
-          </div>
-        ],
-        ["L. Investment Implications", <p style={{fontSize:13,lineHeight:1.85,color:"#333"}}>{r.investmentImplications}</p>],
-        ["M. Financial Metrics",
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
-            {(r.financialMetrics||[]).map((m,i)=>{
-              const arrow={up:"↑",down:"↓",neutral:"→"}[m.trend]||"→";
-              const color={up:"#1a6b3a",down:"#7a2020",neutral:"#555"}[m.trend]||"#555";
-              return <div key={i} style={{background:"#fafafa",border:"0.5px solid #eee",borderRadius:6,padding:"10px 12px"}}>
-                <div style={{fontSize:8,color:"#aaa",letterSpacing:"0.08em",marginBottom:4,fontFamily:"'JetBrains Mono',monospace"}}>{m.label}</div>
-                <div style={{fontSize:16,fontFamily:"'Playfair Display',serif"}}>{m.value} <span style={{fontSize:12,color}}>{arrow}</span></div>
-              </div>;
-            })}
-          </div>
-        ],
-        ["P. Investment Framework",
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {(r.recommendationScorecard||[]).map((item,i)=>{
-              const pct=(item.score/item.maxScore)*100;
-              const color=pct>=70?"#1a6b3a":pct>=40?"#7a5a10":"#7a2020";
-              return <div key={i} style={{padding:"10px 14px",background:"#fafafa",borderRadius:6}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                  <span style={{fontSize:13,fontWeight:500}}>{item.factor}</span>
-                  <span style={{fontSize:12,color,fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>{item.score}/{item.maxScore}</span>
-                </div>
-                <div style={{height:3,background:"#eee",borderRadius:2,marginBottom:6}}>
-                  <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:2}}/>
-                </div>
-                <p style={{fontSize:11,color:"#666",margin:0,lineHeight:1.6}}>{item.rationale}</p>
-              </div>;
-            })}
-            {(r.recommendationScorecard||[]).length>0&&(
-              <div style={{display:"flex",justifyContent:"space-between",padding:"10px 14px",background:"#f5f3ef",borderRadius:6}}>
-                <span style={{fontSize:10,color:"#aaa",letterSpacing:"0.08em",fontFamily:"'JetBrains Mono',monospace"}}>OVERALL SCORE</span>
-                <span style={{fontSize:18,fontFamily:"'Playfair Display',serif"}}>{r.recommendationScorecard.reduce((a,b)=>a+b.score,0)} / {r.recommendationScorecard.reduce((a,b)=>a+b.maxScore,0)}</span>
-              </div>
-            )}
-          </div>
-        ],
-      ].map(([title, body])=>(
-        <div key={title} style={{marginBottom:36,pageBreakInside:"avoid"}}>
-          <div style={{fontSize:11,fontWeight:600,letterSpacing:"0.06em",color:"#111",marginBottom:12,paddingBottom:6,borderBottom:"0.5px solid #eee",fontFamily:"'JetBrains Mono',monospace"}}>{title}</div>
-          {body}
-        </div>
-      ))}
-
-      <div style={{marginTop:40,paddingTop:16,borderTop:"0.5px solid #eee",fontSize:9,color:"#bbb",fontFamily:"'JetBrains Mono',monospace",lineHeight:1.6}}>
-        DISCLAIMER: Generated by Folio for informational and educational purposes only. Not investment advice. Consult a licensed financial advisor before making investment decisions.
-      </div>
-    </div>
-  );
-}
-
-function Section({num,name,children,defaultOpen,forceOpen}){
+function Section({num,name,children,defaultOpen}){
   const [open,setOpen]=useState(defaultOpen);
-  useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
     <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
@@ -298,42 +179,6 @@ function Section({num,name,children,defaultOpen,forceOpen}){
 }
 
 export function ReportPage({report,onNew,onHistory}){
-  const reportRef = useRef(null);
-
-  const [exporting, setExporting] = useState(false);
-
-  const handleDownloadPDF = async () => {
-    setExporting(true);
-    await new Promise(r => setTimeout(r, 1500));
-    const element = document.getElementById("folio-print-view");
-    if (!element) { setExporting(false); return; }
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-    });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = pdfWidth / imgWidth;
-    const totalHeight = imgHeight * ratio;
-    let position = 0;
-    let page = 0;
-    while (position < totalHeight) {
-      if (page > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, totalHeight);
-      position += pdfHeight;
-      page++;
-    }
-    pdf.save(`${report.company_name || "report"}-folio.pdf`);
-    setExporting(false);
-  };
-
-
   const r=report.report||report;
   const meta=report;
   const recColor={BUY:"#1a6b3a",HOLD:"#7a5a10",AVOID:"#7a2020","NEEDS MORE RESEARCH":"#555"}[r.recommendation]||"#333";
@@ -490,7 +335,7 @@ export function ReportPage({report,onNew,onHistory}){
   ];
 
   return(
-    <div ref={reportRef} style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
+    <div style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
 
       {/* Report header */}
       <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:20,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
@@ -535,11 +380,10 @@ export function ReportPage({report,onNew,onHistory}){
         {[["+ New Report",onNew],["Research Library",onHistory]].map(([label,fn])=>(
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
-        <button onClick={handleDownloadPDF} disabled={exporting} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:exporting?"wait":"pointer",marginLeft:"auto",opacity:exporting?0.6:1}}>{exporting?"Generating...":"↓ Download PDF"}</button>
       </div>
 
       <div>
-        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0} forceOpen={allOpen}>{s.content}</Section>)}
+        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0}>{s.content}</Section>)}
       </div>
 
       <div style={{marginTop:20,padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:6,fontFamily:FONTS.mono,fontSize:9,color:"#ccc",lineHeight:1.6}}>
