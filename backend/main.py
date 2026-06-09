@@ -259,6 +259,18 @@ PARAMETERS:
 - Perspective: {request.perspective}
 - Depth: {request.depth}
 
+WRITING STYLE REQUIREMENTS:
+- companyOverview: ~150 words. Cover business model, moat, revenue drivers. Do not explain what the company does generally.
+- financialPerformance: ~200 words. Include key metrics. Do not repeat the same conclusion multiple times.
+- industryPositioning: ~200 words. Focus on competitive dynamics and positioning.
+- keyRisks: Keep each risk to 2-3 sentences. Do not repeat risk themes.
+- bullCase/baseCase/bearCase: Keep as is. These are working well.
+- valuationDiscussion: ~200 words. State the valuation framework, what the market is pricing in, and where you disagree. Do not repeat the same valuation concern multiple times.
+- recommendationRationale: ~150-200 words. Be brutally concise. State the recommendation, the 2-3 key reasons, and stop.
+- investmentSignals: Each signal should be 2-3 sentences maximum.
+- investmentImplications: ~150 words. One clear paragraph.
+Do not repeat the same point in different words across sections. Say it once, say it well, move on.
+
 {depth_note}
 
 {financial_data}
