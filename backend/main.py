@@ -297,6 +297,13 @@ def compare_peers(tickers: str):
             try:
                 stock = yf.Ticker(ticker)
                 info = stock.info
+                if info.get("regularMarketPrice") is None and info.get("currentPrice") is None:
+                    results_search = yf.Search(ticker)
+                    quotes = results_search.quotes
+                    if quotes:
+                        ticker = quotes[0]["symbol"]
+                        stock = yf.Ticker(ticker)
+                        info = stock.info
                 def pct(v): return round(v*100, 1) if v is not None else None
                 def bil(v): return round(v/1e9, 1) if v is not None else None
                 results.append({
