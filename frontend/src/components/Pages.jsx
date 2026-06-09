@@ -45,9 +45,9 @@ function RevenueChart({ ticker }) {
       .then(json => {
         if (json.error || !json.financials) { setLoading(false); return; }
         const f = json.financials;
-        const revenueRow = f["Total Revenue"] || f["Revenue"] || null;
+        const revenueRow = f["Total Revenue"] || f["Operating Revenue"] || f["Revenue"] || null;
         const grossRow = f["Gross Profit"] || null;
-        const operatingRow = f["Operating Income"] || null;
+        const operatingRow = f["Operating Income"] || f["EBIT"] || null;
         if (!revenueRow) { setLoading(false); return; }
         const dates = Object.keys(revenueRow).sort();
         const chartData = dates.map(d => {
@@ -196,9 +196,6 @@ export function ReportPage({report,onNew,onHistory}){
         <p style={{fontSize:13,color:"#444",lineHeight:1.85,margin:0}}>{r.recommendationRationale}</p>
       </div>
     )},
-    {num:"N",name:"Revenue & Margin Trends",content:(
-      <RevenueChart ticker={meta.ticker} />
-    )},
     {num:"K",name:"Investment Signals",content:(
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {(r.investmentSignals||[]).map((s,i)=>{
@@ -221,6 +218,9 @@ export function ReportPage({report,onNew,onHistory}){
       <div style={{background:"#faf8f4",border:"0.5px solid #ece8e0",borderRadius:8,padding:"16px 18px"}}>
         <p style={{fontSize:13,color:"#444",lineHeight:1.85,margin:0}}>{r.investmentImplications}</p>
       </div>
+    )},
+    {num:"N",name:"Revenue & Margin Trends",content:(
+      <RevenueChart ticker={meta.ticker} />
     )},
     {num:"M",name:"Financial Metrics",content:(
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
