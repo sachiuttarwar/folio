@@ -168,7 +168,7 @@ function Section({num,name,children,defaultOpen,forceOpen}){
   const [open,setOpen]=useState(defaultOpen);
   useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
-    <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+    <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",pageBreakInside:"avoid",breakInside:"avoid"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontFamily:FONTS.mono,fontSize:9,color:"#bbb",background:"#f5f3ef",padding:"2px 8px",borderRadius:3,letterSpacing:"0.06em"}}>{num}</span>
@@ -190,7 +190,7 @@ export function ReportPage({report,onNew,onHistory}){
     setAllOpen(true);
     const btns = document.getElementById("report-action-buttons");
     if (btns) btns.style.visibility = "hidden";
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 3000));
     const element = reportRef.current;
     if (!element) return;
     const canvas = await html2canvas(element, {
