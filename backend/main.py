@@ -270,6 +270,7 @@ WRITING STYLE REQUIREMENTS:
 - investmentSignals: Each signal should be 2-3 sentences maximum.
 - investmentImplications: ~150 words. One clear paragraph.
 Do not repeat the same point in different words across sections. Say it once, say it well, move on.
+- Where possible, make quantified, specific judgments rather than generic statements. For example, instead of "hyperscalers are building custom silicon", say "if Microsoft, Amazon, and Google redirect even 15% of AI capex toward internal accelerators, NVDA implied FY2028 revenue becomes difficult to sustain." Make the analysis feel like a real analyst wrote it, not a summary.
 
 {depth_note}
 
@@ -318,21 +319,28 @@ def compare_peers(tickers: str):
                         info = stock.info
                 def pct(v): return round(v*100, 1) if v is not None else None
                 def bil(v): return round(v/1e9, 1) if v is not None else None
+                mktcap = bil(info.get("marketCap"))
+                rev = bil(info.get("totalRevenue"))
+                # Skip tickers with no real data
+                if mktcap is None and rev is None:
+                    continue
+                div_yield = info.get("dividendYield")
                 results.append({
                     "ticker": ticker,
                     "name": info.get("shortName", ticker),
-                    "marketCap": bil(info.get("marketCap")),
-                    "revenue": bil(info.get("totalRevenue")),
+                    "marketCap": mktcap,
+                    "revenue": rev,
                     "revenueGrowth": pct(info.get("revenueGrowth")),
                     "grossMargin": pct(info.get("grossMargins")),
                     "operatingMargin": pct(info.get("operatingMargins")),
-                    "peRatio": info.get("trailingPE"),
-                    "forwardPE": info.get("forwardPE"),
-                    "evRevenue": info.get("enterpriseToRevenue"),
+                    "peRatio": round(info.get("trailingPE"), 1) if info.get("trailingPE") else None,
+                    "forwardPE": round(info.get("forwardPE"), 1) if info.get("forwardPE") else None,
+                    "evRevenue": round(info.get("enterpriseToRevenue"), 1) if info.get("enterpriseToRevenue") else None,
+                    "dividendYield": pct(div_yield) if div_yield and div_yield < 0.20 else None,
                     "recommendation": info.get("recommendationKey","N/A").upper(),
                 })
             except Exception:
-                results.append({"ticker": ticker, "name": ticker, "error": True})
+                pass
         return {"peers": results}
     except Exception as e:
         return {"error": str(e)}
