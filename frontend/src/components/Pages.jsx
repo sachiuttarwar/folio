@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const FONTS = {
   serif: "'Playfair Display', serif",
@@ -26,6 +29,74 @@ export function GeneratingPage() {
             {s}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function RevenueChart({ ticker }) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!ticker) return;
+    fetch(`${API}/financials/${ticker}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.error || !json.financials) { setLoading(false); return; }
+        const f = json.financials;
+        const revenueRow = f["Total Revenue"] || f["Revenue"] || null;
+        const grossRow = f["Gross Profit"] || null;
+        const operatingRow = f["Operating Income"] || null;
+        if (!revenueRow) { setLoading(false); return; }
+        const dates = Object.keys(revenueRow).sort();
+        const chartData = dates.map(d => {
+          const rev = revenueRow[d];
+          const gross = grossRow?.[d];
+          const op = operatingRow?.[d];
+          return {
+            year: d.slice(0, 4),
+            revenue: rev ? parseFloat((rev / 1e9).toFixed(1)) : null,
+            grossMargin: rev && gross ? parseFloat(((gross / rev) * 100).toFixed(1)) : null,
+            operatingMargin: rev && op ? parseFloat(((op / rev) * 100).toFixed(1)) : null,
+          };
+        });
+        setData(chartData);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [ticker]);
+
+  if (loading) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>Loading chart data...</div>;
+  if (!data.length) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>No historical data available.</div>;
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
+      <div>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#aaa",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:12}}>Annual Revenue (USD Billions)</div>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={data} margin={{top:0,right:0,bottom:0,left:0}}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0ece4" vertical={false}/>
+            <XAxis dataKey="year" tick={{fontSize:11,fontFamily:"'JetBrains Mono',monospace",fill:"#aaa"}} axisLine={false} tickLine={false}/>
+            <YAxis tick={{fontSize:11,fontFamily:"'JetBrains Mono',monospace",fill:"#aaa"}} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}B`}/>
+            <Tooltip formatter={(v)=>`$${v}B`} contentStyle={{fontSize:12,fontFamily:"'JetBrains Mono',monospace",border:"0.5px solid #e4e0d8",borderRadius:6}}/>
+            <Bar dataKey="revenue" fill="#111" radius={[3,3,0,0]}/>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#aaa",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:12}}>Gross & Operating Margin (%)</div>
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={data} margin={{top:0,right:0,bottom:0,left:0}}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0ece4" vertical={false}/>
+            <XAxis dataKey="year" tick={{fontSize:11,fontFamily:"'JetBrains Mono',monospace",fill:"#aaa"}} axisLine={false} tickLine={false}/>
+            <YAxis tick={{fontSize:11,fontFamily:"'JetBrains Mono',monospace",fill:"#aaa"}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`}/>
+            <Tooltip formatter={(v)=>`${v}%`} contentStyle={{fontSize:12,fontFamily:"'JetBrains Mono',monospace",border:"0.5px solid #e4e0d8",borderRadius:6}}/>
+            <Legend wrapperStyle={{fontSize:11,fontFamily:"'JetBrains Mono',monospace"}}/>
+            <Line type="monotone" dataKey="grossMargin" stroke="#1a6b3a" strokeWidth={1.5} dot={{r:3}} name="Gross Margin"/>
+            <Line type="monotone" dataKey="operatingMargin" stroke="#3a4a7a" strokeWidth={1.5} dot={{r:3}} name="Operating Margin"/>
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -124,6 +195,9 @@ export function ReportPage({report,onNew,onHistory}){
       <div style={{background:"#faf8f4",border:"0.5px solid #ece8e0",borderRadius:8,padding:"16px 18px"}}>
         <p style={{fontSize:13,color:"#444",lineHeight:1.85,margin:0}}>{r.recommendationRationale}</p>
       </div>
+    )},
+    {num:"N",name:"Revenue & Margin Trends",content:(
+      <RevenueChart ticker={meta.ticker} />
     )},
     {num:"K",name:"Investment Signals",content:(
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
