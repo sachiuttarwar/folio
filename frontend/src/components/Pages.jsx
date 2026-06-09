@@ -302,7 +302,7 @@ export function ReportPage({report,onNew,onHistory}){
     {num:"O",name:"Peer Comparison",content:(
       <PeerTable ticker={meta.ticker} peers={meta.peers} />
     )},
-    {num:"P",name:"Recommendation Scorecard",content:(
+    {num:"P",name:"Investment Framework",content:(
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
         {(r.recommendationScorecard||[]).map((item,i)=>{
           const pct = (item.score/item.maxScore)*100;
