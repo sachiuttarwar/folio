@@ -98,7 +98,7 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0b08", fontFamily: "'Inter', sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');`}</style>
-      <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", height: 50, background: "#111", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "sticky", top: 0, zIndex: 100 }}>
+      <nav className="folio-no-print" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", height: 50, background: "#111", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 400, color: "#f0ead8", fontStyle: "italic", cursor: "pointer" }}
           onClick={() => setPage("landing")}>
           Folio

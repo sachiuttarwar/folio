@@ -182,6 +182,7 @@ function Section({num,name,children,defaultOpen,forceOpen}){
         <span style={{color:"#ccc",transform:open?"rotate(180deg)":"none",transition:"transform 0.2s",fontSize:11}}>▾</span>
       </button>
       {open&&<div style={{padding:"20px 22px"}}>{children}</div>}
+      <div className="print-only" style={{display:"none",padding:"20px 22px"}}>{children}</div>
     </div>
   );
 }
@@ -203,47 +204,13 @@ export function ReportPage({report,onNew,onHistory}){
       .catch(() => {});
   }, [report.ticker, report.peers]);
 
+  const [printing, setPrinting] = useState(false);
+
   const handleDownloadPDF = async () => {
-    setAllOpen(true);
-    const btns = document.getElementById("report-action-buttons");
-    if (btns) btns.style.visibility = "hidden";
-    await new Promise(r => setTimeout(r, 10000));
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-    // Capture header separately (page 1)
-    const header = document.getElementById("report-header");
-    if (header) {
-      const canvas = await html2canvas(header, { scale: 2, useCORS: true, backgroundColor: "#faf8f4", logging: false });
-      const ratio = pdfWidth / canvas.width;
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, canvas.height * ratio);
-    }
-
-    // Capture each section on its own page
-    const sectionEls = document.querySelectorAll(".folio-section");
-    for (let i = 0; i < sectionEls.length; i++) {
-      pdf.addPage();
-      const canvas = await html2canvas(sectionEls[i], { scale: 2, useCORS: true, backgroundColor: "#faf8f4", logging: false });
-      const ratio = pdfWidth / canvas.width;
-      const imgH = canvas.height * ratio;
-      if (imgH <= pdfHeight) {
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, imgH);
-      } else {
-        let pos = 0;
-        let pg = 0;
-        while (pos < imgH) {
-          if (pg > 0) pdf.addPage();
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, -pos, pdfWidth, imgH);
-          pos += pdfHeight;
-          pg++;
-        }
-      }
-    }
-
-    if (btns) btns.style.visibility = "visible";
-    setAllOpen(false);
-    pdf.save(`${report.company_name || "report"}-folio.pdf`);
+    setPrinting(true);
+    await new Promise(r => setTimeout(r, 8000));
+    window.print();
+    setPrinting(false);
   };
 
 
