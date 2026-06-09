@@ -115,6 +115,7 @@ export default function App() {
         company_name: formData.companyName,
         ticker: formData.ticker.toUpperCase(),
         industry: formData.industry,
+        peers: formData.peers,
         perspective: formData.perspective,
         depth: formData.depth,
         documents: uploadedFiles.map((f) => f.name),
