@@ -37,11 +37,16 @@ export function GeneratingPage() {
 }
 
 
-function PeerTable({ ticker, peers }) {
+function PeerTable({ ticker, peers, preloadedData }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (preloadedData && preloadedData.length > 0) {
+      setData(preloadedData);
+      setLoading(false);
+      return;
+    }
     if (!ticker || !peers) { setLoading(false); return; }
     const peerList = peers.split(",").map(p => p.trim()).filter(Boolean);
     const allTickers = encodeURIComponent([ticker, ...peerList].join(","));
@@ -53,7 +58,7 @@ function PeerTable({ ticker, peers }) {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [ticker, peers]);
+  }, [ticker, peers, preloadedData]);
 
   if (loading) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0",minHeight:40}}>&nbsp;</div>;
   if (!data.length) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>No peer data available.</div>;
@@ -184,6 +189,19 @@ function Section({num,name,children,defaultOpen,forceOpen}){
 export function ReportPage({report,onNew,onHistory}){
   const reportRef = useRef(null);
   const [allOpen, setAllOpen] = useState(false);
+  const [peerData, setPeerData] = useState([]);
+
+  useEffect(() => {
+    const ticker = report.ticker;
+    const peers = report.peers;
+    if (!ticker) return;
+    const peerList = peers ? peers.split(",").map(p => p.trim()).filter(Boolean) : [];
+    const allTickers = encodeURIComponent([ticker, ...peerList].join(","));
+    fetch(`${API}/compare/${allTickers}`)
+      .then(r => r.json())
+      .then(json => { if (json.peers) setPeerData(json.peers); })
+      .catch(() => {});
+  }, [report.ticker, report.peers]);
 
   const handleDownloadPDF = async () => {
     // Expand all sections and hide buttons
@@ -343,7 +361,7 @@ export function ReportPage({report,onNew,onHistory}){
       <RevenueChart ticker={meta.ticker} />
     )},
     {num:"O",name:"Peer Comparison",content:(
-      <PeerTable ticker={meta.ticker} peers={meta.peers} />
+      <PeerTable ticker={meta.ticker} peers={meta.peers} preloadedData={peerData} />
     )},
     {num:"P",name:"Investment Framework",content:(
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
