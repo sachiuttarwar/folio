@@ -125,6 +125,46 @@ export function ReportPage({report,onNew,onHistory}){
         <p style={{fontSize:13,color:"#444",lineHeight:1.85,margin:0}}>{r.recommendationRationale}</p>
       </div>
     )},
+    {num:"K",name:"Investment Signals",content:(
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {(r.investmentSignals||[]).map((s,i)=>{
+          const color={positive:"#1a6b3a",negative:"#7a2020",neutral:"#555"}[s.direction]||"#555";
+          const bg={positive:"#f0f9f4",negative:"#fdf3f3",neutral:"#f5f3ef"}[s.direction]||"#f5f3ef";
+          const border={positive:"#c0dfc8",negative:"#e0c4c4",neutral:"#d8d4cc"}[s.direction]||"#e4e0d8";
+          return(
+            <div key={i} style={{background:bg,border:`0.5px solid ${border}`,borderRadius:6,padding:"10px 14px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.direction}</span>
+                <span style={{fontSize:13,fontWeight:500,color:"#111"}}>{s.signal}</span>
+              </div>
+              <p style={{fontSize:12,color:"#666",margin:0,lineHeight:1.65}}>{s.detail}</p>
+            </div>
+          );
+        })}
+      </div>
+    )},
+    {num:"L",name:"Investment Implications",content:(
+      <div style={{background:"#faf8f4",border:"0.5px solid #ece8e0",borderRadius:8,padding:"16px 18px"}}>
+        <p style={{fontSize:13,color:"#444",lineHeight:1.85,margin:0}}>{r.investmentImplications}</p>
+      </div>
+    )},
+    {num:"M",name:"Financial Metrics",content:(
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+        {(r.financialMetrics||[]).map((m,i)=>{
+          const arrow={up:"↑",down:"↓",neutral:"→"}[m.trend]||"→";
+          const color={up:"#1a6b3a",down:"#7a2020",neutral:"#555"}[m.trend]||"#555";
+          return(
+            <div key={i} style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:8,padding:"14px 16px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#aaa",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>{m.label}</div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6}}>
+                <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:"#111"}}>{m.value}</span>
+                <span style={{fontSize:14,color}}>{arrow}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )},
   ];
 
   return(
