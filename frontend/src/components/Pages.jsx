@@ -173,7 +173,7 @@ function Section({num,name,children,defaultOpen,forceOpen}){
   const [open,setOpen]=useState(defaultOpen);
   useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
-    <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",pageBreakInside:"avoid",breakInside:"avoid"}}>
+    <div className="folio-section" style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontFamily:FONTS.mono,fontSize:9,color:"#bbb",background:"#f5f3ef",padding:"2px 8px",borderRadius:3,letterSpacing:"0.06em"}}>{num}</span>
@@ -204,38 +204,45 @@ export function ReportPage({report,onNew,onHistory}){
   }, [report.ticker, report.peers]);
 
   const handleDownloadPDF = async () => {
-    // Expand all sections and hide buttons
     setAllOpen(true);
     const btns = document.getElementById("report-action-buttons");
     if (btns) btns.style.visibility = "hidden";
     await new Promise(r => setTimeout(r, 10000));
-    const element = reportRef.current;
-    if (!element) return;
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#faf8f4",
-      logging: false,
-    });
-    // Restore buttons
-    if (btns) btns.style.visibility = "visible";
-    setAllOpen(false);
-    const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = pdfWidth / imgWidth;
-    const totalHeight = imgHeight * ratio;
-    let position = 0;
-    let page = 0;
-    while (position < totalHeight) {
-      if (page > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, totalHeight);
-      position += pdfHeight;
-      page++;
+
+    // Capture header separately (page 1)
+    const header = document.getElementById("report-header");
+    if (header) {
+      const canvas = await html2canvas(header, { scale: 2, useCORS: true, backgroundColor: "#faf8f4", logging: false });
+      const ratio = pdfWidth / canvas.width;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, canvas.height * ratio);
     }
+
+    // Capture each section on its own page
+    const sectionEls = document.querySelectorAll(".folio-section");
+    for (let i = 0; i < sectionEls.length; i++) {
+      pdf.addPage();
+      const canvas = await html2canvas(sectionEls[i], { scale: 2, useCORS: true, backgroundColor: "#faf8f4", logging: false });
+      const ratio = pdfWidth / canvas.width;
+      const imgH = canvas.height * ratio;
+      if (imgH <= pdfHeight) {
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, imgH);
+      } else {
+        let pos = 0;
+        let pg = 0;
+        while (pos < imgH) {
+          if (pg > 0) pdf.addPage();
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, -pos, pdfWidth, imgH);
+          pos += pdfHeight;
+          pg++;
+        }
+      }
+    }
+
+    if (btns) btns.style.visibility = "visible";
+    setAllOpen(false);
     pdf.save(`${report.company_name || "report"}-folio.pdf`);
   };
 
@@ -399,7 +406,7 @@ export function ReportPage({report,onNew,onHistory}){
     <div ref={reportRef} style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
 
       {/* Report header */}
-      <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:20,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+      <div id="report-header" style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:20,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
         <div style={{background:"#111",padding:"22px 26px 18px"}}>
           <div style={{fontFamily:FONTS.mono,fontSize:9,color:"#666",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>Folio · Equity Research</div>
           <div style={{fontFamily:FONTS.serif,fontSize:26,fontWeight:400,color:"#fff",marginBottom:6}}>{meta.company_name}</div>
