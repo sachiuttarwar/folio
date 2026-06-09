@@ -394,7 +394,7 @@ export function ReportPage({report,onNew,onHistory}){
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:8}}>
             <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#aaa",letterSpacing:"0.08em",textTransform:"uppercase"}}>Overall Score</span>
             <span style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#111"}}>
-              {r.recommendationScorecard.reduce((a,b)=>a+b.score,0)} / {r.recommendationScorecard.reduce((a,b)=>a+b.maxScore,0)}
+              {r.recommendationScorecard.reduce((a,b)=>a+Number(b.score),0)} / {r.recommendationScorecard.reduce((a,b)=>a+Number(b.maxScore),0)}
             </span>
           </div>
         )}
