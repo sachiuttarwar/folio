@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -179,6 +181,37 @@ function Section({num,name,children,defaultOpen}){
 }
 
 export function ReportPage({report,onNew,onHistory}){
+  const reportRef = useRef(null);
+
+  const handleDownloadPDF = async () => {
+    const element = reportRef.current;
+    if (!element) return;
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#faf8f4",
+      logging: false,
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const ratio = pdfWidth / imgWidth;
+    const totalHeight = imgHeight * ratio;
+    let position = 0;
+    let page = 0;
+    while (position < totalHeight) {
+      if (page > 0) pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, totalHeight);
+      position += pdfHeight;
+      page++;
+    }
+    pdf.save(`${report.company_name || "report"}-folio.pdf`);
+  };
+
+
   const r=report.report||report;
   const meta=report;
   const recColor={BUY:"#1a6b3a",HOLD:"#7a5a10",AVOID:"#7a2020","NEEDS MORE RESEARCH":"#555"}[r.recommendation]||"#333";
@@ -335,7 +368,7 @@ export function ReportPage({report,onNew,onHistory}){
   ];
 
   return(
-    <div style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
+    <div ref={reportRef} style={{maxWidth:820,margin:"0 auto",padding:"40px 24px",width:"100%"}}>
 
       {/* Report header */}
       <div style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:20,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
@@ -380,6 +413,7 @@ export function ReportPage({report,onNew,onHistory}){
         {[["+ New Report",onNew],["Research Library",onHistory]].map(([label,fn])=>(
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
+        <button onClick={handleDownloadPDF} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer",marginLeft:"auto"}}>↓ Download PDF</button>
       </div>
 
       <div>
