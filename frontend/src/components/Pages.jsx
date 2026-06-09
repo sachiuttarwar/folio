@@ -55,7 +55,7 @@ function PeerTable({ ticker, peers }) {
       .catch(() => setLoading(false));
   }, [ticker, peers]);
 
-  if (loading) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>Loading peer data...</div>;
+  if (loading) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0",minHeight:40}}>&nbsp;</div>;
   if (!data.length) return <div style={{fontSize:13,color:"#aaa",padding:"20px 0"}}>No peer data available.</div>;
 
   const cols = ["ticker","name","marketCap","revenue","revenueGrowth","grossMargin","operatingMargin","peRatio","forwardPE"];
@@ -190,7 +190,7 @@ export function ReportPage({report,onNew,onHistory}){
     setAllOpen(true);
     const btns = document.getElementById("report-action-buttons");
     if (btns) btns.style.visibility = "hidden";
-    await new Promise(r => setTimeout(r, 5000));
+    await new Promise(r => setTimeout(r, 10000));
     const element = reportRef.current;
     if (!element) return;
     const canvas = await html2canvas(element, {
