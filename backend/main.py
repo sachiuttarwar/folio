@@ -270,6 +270,7 @@ WRITING STYLE REQUIREMENTS:
 - investmentSignals: Each signal should be 2-3 sentences maximum.
 - investmentImplications: ~150 words. One clear paragraph.
 Do not repeat the same point in different words across sections. Say it once, say it well, move on.
+- Avoid using em dashes (—) mid-sentence. Use commas, semicolons, or restructure the sentence instead. Em dashes are a common AI writing pattern and should be avoided entirely.
 - Where possible, make quantified, specific judgments rather than generic statements. For example, instead of "hyperscalers are building custom silicon", say "if Microsoft, Amazon, and Google redirect even 15% of AI capex toward internal accelerators, NVDA implied FY2028 revenue becomes difficult to sustain." Make the analysis feel like a real analyst wrote it, not a summary.
 
 {depth_note}
