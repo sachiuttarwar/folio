@@ -210,6 +210,7 @@ export function ReportPage({report,onNew,onHistory}){
     setAllOpen(true);
     const btns = document.getElementById("report-action-buttons");
     if (btns) btns.style.visibility = "hidden";
+    await new Promise(r => setTimeout(r, 200)); // let UI update first
     await new Promise(r => setTimeout(r, 10000));
 
     const margin = 25.4; // 1 inch in mm
@@ -284,7 +285,7 @@ export function ReportPage({report,onNew,onHistory}){
 
   const sections=[
     {
-      num:"A",name:"Executive Summary",
+      num:"A",name:"Executive Summary",id:"exec-summary-section",
       content:(
         <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:10}}>
           {(r.executiveSummary||[]).map((b,i)=>(
