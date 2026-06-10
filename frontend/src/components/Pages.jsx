@@ -418,14 +418,25 @@ export function ReportPage({report,onNew,onHistory}){
             </div>
           );
         })}
-        {(r.recommendationScorecard||[]).length>0&&(
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:8}}>
-            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#aaa",letterSpacing:"0.08em",textTransform:"uppercase"}}>Overall Score</span>
-            <span style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#111"}}>
-              {r.recommendationScorecard.reduce((a,b)=>a+b.score,0)} / {r.recommendationScorecard.reduce((a,b)=>a+b.maxScore,0)}
-            </span>
-          </div>
-        )}
+        {(r.recommendationScorecard||[]).length>0&&(()=>{
+          const total = r.recommendationScorecard.reduce((a,b)=>a+Number(b.score),0);
+          const maxTotal = r.recommendationScorecard.reduce((a,b)=>a+Number(b.maxScore),0);
+          const pct = maxTotal > 0 ? (total/maxTotal)*100 : 0;
+          const range = pct >= 81 ? "Strong Buy Range" : pct >= 65 ? "Buy Range" : pct >= 50 ? "Hold Range" : pct >= 35 ? "Avoid Range" : "Strong Avoid Range";
+          const rangeColor = pct >= 65 ? "#1a6b3a" : pct >= 50 ? "#7a5a10" : "#7a2020";
+          return (
+            <div style={{padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:8}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#aaa",letterSpacing:"0.08em",textTransform:"uppercase"}}>Overall Score</span>
+                <span style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#111"}}>{total} / {maxTotal}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:rangeColor,letterSpacing:"0.06em"}}>{range}</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#ccc",letterSpacing:"0.04em"}}>65–80 Buy · 50–64 Hold · Below 50 Avoid</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     )},
   ];
