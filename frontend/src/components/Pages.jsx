@@ -174,10 +174,10 @@ function Section({num,name,children,defaultOpen,forceOpen,id}){
   useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
     <div id={id} className="folio-section" style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
-      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
           <span style={{fontFamily:FONTS.mono,fontSize:9,color:"#bbb",background:"#f5f3ef",padding:"2px 8px",borderRadius:3,letterSpacing:"0.06em"}}>{num}</span>
-          <span style={{fontSize:13,fontWeight:500,color:"#111",letterSpacing:"0.01em"}}>{name}</span>
+          <span style={{fontFamily:FONTS.serif,fontSize:18,fontWeight:400,color:"#111",letterSpacing:"0.01em"}}>{name}</span>
         </div>
         <span style={{color:"#ccc",transform:open?"rotate(180deg)":"none",transition:"transform 0.2s",fontSize:11}}>▾</span>
       </button>
@@ -245,8 +245,15 @@ export function ReportPage({report,onNew,onHistory}){
     if (header && execSummary) {
       const { imgData: hImg, imgH: hH } = await captureEl(header);
       const { imgData: eImg, imgH: eH } = await captureEl(execSummary);
-      pdf.addImage(hImg, "PNG", margin, margin, contentW, hH);
-      pdf.addImage(eImg, "PNG", margin, margin + hH + 6, contentW, eH);
+      const totalH = hH + 8 + eH;
+      if (totalH <= pageH - margin * 2) {
+        pdf.addImage(hImg, "PNG", margin, margin, contentW, hH);
+        pdf.addImage(eImg, "PNG", margin, margin + hH + 8, contentW, eH);
+      } else {
+        pdf.addImage(hImg, "PNG", margin, margin, contentW, hH);
+        pdf.addPage();
+        pdf.addImage(eImg, "PNG", margin, margin, contentW, eH);
+      }
     } else if (header) {
       const { imgData, imgH } = await captureEl(header);
       addToPDF(imgData, imgH);
@@ -469,7 +476,8 @@ export function ReportPage({report,onNew,onHistory}){
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
         <button onClick={handleDownloadPDF} disabled={exporting} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:exporting?"wait":"pointer",marginLeft:"auto",opacity:exporting?0.7:1}}>{exporting?"Generating...":"↓ Download PDF"}</button>
-      {exporting&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.55)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      {exporting&&(
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.55)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div style={{background:"#fff",borderRadius:10,padding:"36px 48px",textAlign:"center",maxWidth:340,boxShadow:"0 8px 40px rgba(0,0,0,0.18)"}}>
           <div style={{fontFamily:FONTS.serif,fontSize:20,color:"#111",marginBottom:8}}>Generating Report PDF</div>
           <div style={{fontFamily:FONTS.mono,fontSize:11,color:"#aaa",marginBottom:20,lineHeight:1.6}}>Loading all data and rendering sections.<br/>This takes about 10 seconds.</div>
@@ -478,7 +486,7 @@ export function ReportPage({report,onNew,onHistory}){
           </div>
           <style>{`@keyframes pdfprogress{from{width:0%}to{width:100%}}`}</style>
         </div>
-      </div>}
+      </div>)}
       </div>
 
       <div>
