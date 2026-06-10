@@ -477,6 +477,7 @@ export function ReportPage({report,onNew,onHistory}){
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
         <button onClick={handleDownloadPDF} disabled={exporting} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:exporting?"wait":"pointer",marginLeft:"auto",opacity:exporting?0.7:1}}>{exporting?"Generating...":"↓ Download PDF"}</button>
+      </div>
       {exporting&&(
       <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.55)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div style={{background:"#fff",borderRadius:10,padding:"36px 48px",textAlign:"center",maxWidth:340,boxShadow:"0 8px 40px rgba(0,0,0,0.18)"}}>
@@ -488,7 +489,6 @@ export function ReportPage({report,onNew,onHistory}){
           <style>{`@keyframes pdfprogress{from{width:0%}to{width:100%}}`}</style>
         </div>
       </div>)}
-      </div>
 
       <div>
         {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0} forceOpen={allOpen} id={s.id}>{s.content}</Section>)}
