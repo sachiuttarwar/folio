@@ -126,7 +126,7 @@ export default function UploadPage({ uploadedFiles, setUploadedFiles, formData, 
           { label: "Company Name", id: "companyName", placeholder: "e.g. Apple Inc." },
           { label: "Ticker Symbol", id: "ticker", placeholder: "e.g. AAPL" },
           { label: "Industry / Sector", id: "industry", placeholder: "e.g. Consumer Technology" },
-          { label: "Peer Companies (optional)", id: "peers", placeholder: "e.g. MSFT, GOOG" },
+          { label: "Peer Companies (fill in if not auto-filled)", id: "peers", placeholder: "e.g. MSFT, GOOG" },
         ].map(({ label, id, placeholder }) => (
           <div key={id}>
             <div style={S.label}>{label}</div>
