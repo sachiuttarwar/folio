@@ -169,11 +169,11 @@ function RevenueChart({ ticker }) {
   );
 }
 
-function Section({num,name,children,defaultOpen,forceOpen}){
+function Section({num,name,children,defaultOpen,forceOpen,id}){
   const [open,setOpen]=useState(defaultOpen);
   useEffect(()=>{ if(forceOpen) setOpen(true); },[forceOpen]);
   return(
-    <div className="folio-section" style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+    <div id={id} className="folio-section" style={{background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:10,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",background:open?"#fdfcfa":"#fff",borderBottom:open?"0.5px solid #e8e4dc":"none",cursor:"pointer",textAlign:"left"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontFamily:FONTS.mono,fontSize:9,color:"#bbb",background:"#f5f3ef",padding:"2px 8px",borderRadius:3,letterSpacing:"0.06em"}}>{num}</span>
@@ -203,46 +203,66 @@ export function ReportPage({report,onNew,onHistory}){
       .catch(() => {});
   }, [report.ticker, report.peers]);
 
+  const [exporting, setExporting] = useState(false);
+
   const handleDownloadPDF = async () => {
+    setExporting(true);
     setAllOpen(true);
     const btns = document.getElementById("report-action-buttons");
     if (btns) btns.style.visibility = "hidden";
     await new Promise(r => setTimeout(r, 10000));
+
+    const margin = 25.4; // 1 inch in mm
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const contentW = pageW - margin * 2;
 
-    // Capture header separately (page 1)
-    const header = document.getElementById("report-header");
-    if (header) {
-      const canvas = await html2canvas(header, { scale: 2, useCORS: true, backgroundColor: "#faf8f4", logging: false });
-      const ratio = pdfWidth / canvas.width;
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, canvas.height * ratio);
-    }
-
-    // Capture each section on its own page
-    const sectionEls = document.querySelectorAll(".folio-section");
-    for (let i = 0; i < sectionEls.length; i++) {
-      pdf.addPage();
-      const canvas = await html2canvas(sectionEls[i], { scale: 2, useCORS: true, backgroundColor: "#faf8f4", logging: false });
-      const ratio = pdfWidth / canvas.width;
+    const captureEl = async (el, bg="#ffffff") => {
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: bg, logging: false });
+      const ratio = contentW / canvas.width;
       const imgH = canvas.height * ratio;
-      if (imgH <= pdfHeight) {
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, imgH);
+      return { imgData: canvas.toDataURL("image/png"), imgH };
+    };
+
+    const addToPDF = (imgData, imgH, x=margin, y=margin, firstPage=false) => {
+      if (imgH <= pageH - margin * 2) {
+        pdf.addImage(imgData, "PNG", x, y, contentW, imgH);
       } else {
-        let pos = 0;
-        let pg = 0;
+        let pos = 0; let pg = 0;
         while (pos < imgH) {
-          if (pg > 0) pdf.addPage();
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, -pos, pdfWidth, imgH);
-          pos += pdfHeight;
+          if (pg > 0) { pdf.addPage(); }
+          pdf.addImage(imgData, "PNG", x, margin - pos, contentW, imgH);
+          pos += pageH - margin * 2;
           pg++;
         }
       }
+    };
+
+    // Page 1: header + executive summary together
+    const header = document.getElementById("report-header");
+    const execSummary = document.getElementById("exec-summary-section");
+    if (header && execSummary) {
+      const { imgData: hImg, imgH: hH } = await captureEl(header);
+      const { imgData: eImg, imgH: eH } = await captureEl(execSummary);
+      pdf.addImage(hImg, "PNG", margin, margin, contentW, hH);
+      pdf.addImage(eImg, "PNG", margin, margin + hH + 6, contentW, eH);
+    } else if (header) {
+      const { imgData, imgH } = await captureEl(header);
+      addToPDF(imgData, imgH);
+    }
+
+    // Remaining sections — each on its own page
+    const sectionEls = document.querySelectorAll(".folio-section:not(#exec-summary-section)");
+    for (let i = 0; i < sectionEls.length; i++) {
+      pdf.addPage();
+      const { imgData, imgH } = await captureEl(sectionEls[i]);
+      addToPDF(imgData, imgH);
     }
 
     if (btns) btns.style.visibility = "visible";
     setAllOpen(false);
+    setExporting(false);
     pdf.save(`${report.company_name || "report"}-folio.pdf`);
   };
 
@@ -448,11 +468,21 @@ export function ReportPage({report,onNew,onHistory}){
         {[["+ New Report",onNew],["Research Library",onHistory]].map(([label,fn])=>(
           <button key={label} onClick={fn} style={{background:"#fff",border:"0.5px solid #d8d4cc",color:"#666",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer"}}>{label}</button>
         ))}
-        <button onClick={handleDownloadPDF} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:"pointer",marginLeft:"auto"}}>↓ Download PDF</button>
+        <button onClick={handleDownloadPDF} disabled={exporting} style={{background:"#111",border:"none",color:"#fff",fontFamily:FONTS.sans,fontSize:12,padding:"7px 16px",borderRadius:5,cursor:exporting?"wait":"pointer",marginLeft:"auto",opacity:exporting?0.7:1}}>{exporting?"Generating...":"↓ Download PDF"}</button>
+      {exporting&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.55)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{background:"#fff",borderRadius:10,padding:"36px 48px",textAlign:"center",maxWidth:340,boxShadow:"0 8px 40px rgba(0,0,0,0.18)"}}>
+          <div style={{fontFamily:FONTS.serif,fontSize:20,color:"#111",marginBottom:8}}>Generating Report PDF</div>
+          <div style={{fontFamily:FONTS.mono,fontSize:11,color:"#aaa",marginBottom:20,lineHeight:1.6}}>Loading all data and rendering sections.<br/>This takes about 10 seconds.</div>
+          <div style={{width:"100%",height:3,background:"#eee",borderRadius:2,overflow:"hidden"}}>
+            <div style={{height:"100%",background:"#111",borderRadius:2,animation:"pdfprogress 10s linear forwards"}}/>
+          </div>
+          <style>{`@keyframes pdfprogress{from{width:0%}to{width:100%}}`}</style>
+        </div>
+      </div>}
       </div>
 
       <div>
-        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0} forceOpen={allOpen}>{s.content}</Section>)}
+        {sections.map((s,i)=><Section key={i} num={s.num} name={s.name} defaultOpen={i===0} forceOpen={allOpen} id={s.id}>{s.content}</Section>)}
       </div>
 
       <div style={{marginTop:20,padding:"12px 16px",background:"#fff",border:"0.5px solid #e4e0d8",borderRadius:6,fontFamily:FONTS.mono,fontSize:9,color:"#ccc",lineHeight:1.6}}>
