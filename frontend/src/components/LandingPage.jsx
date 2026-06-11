@@ -48,7 +48,7 @@ export default function LandingPage({ onStart }) {
                 },
                 {
                   num: "02", label: "Extract", sub: "Section keyword matching",
-                  desc: "Folio scans the document for key sections - business overview, competition, revenue drivers, risk factors - using keyword matching to locate and extract the most analytically relevant content.",
+                  desc: "Folio scans the document for key sections: business overview, competition, revenue drivers, and risk factors. Keyword matching locates and extracts the most analytically relevant content.",
                   out: "Structured text"
                 },
                 {
@@ -58,7 +58,7 @@ export default function LandingPage({ onStart }) {
                 },
                 {
                   num: "04", label: "Analyze", sub: "Claude (Anthropic)",
-                  desc: "Claude synthesizes the extracted filing content and live market data into a structured investment thesis - evaluating valuation, competitive positioning, risks, and forming a recommendation.",
+                  desc: "Claude synthesizes the extracted filing content and live market data into a structured investment thesis, evaluating valuation, competitive positioning, and risks to form a final recommendation.",
                   out: "Investment thesis"
                 },
                 {
