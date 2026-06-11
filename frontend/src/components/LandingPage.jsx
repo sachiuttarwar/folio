@@ -39,23 +39,45 @@ export default function LandingPage({ onStart }) {
             <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "#111", marginBottom: 40 }}>How It Works</div>
 
             {/* High-level flow */}
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 44, overflowX: "auto" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 44, gap: 0 }}>
               {[
-                { num: "01", label: "Upload", sub: "10-K, 10-Q, transcripts" },
-                { num: "02", label: "Extract", sub: "AI parses key sections" },
-                { num: "03", label: "Enrich", sub: "Live market data pulled" },
-                { num: "04", label: "Analyze", sub: "Claude synthesizes thesis" },
-                { num: "05", label: "Report", sub: "Institutional memo output" },
+                {
+                  num: "01", label: "Upload", sub: "10-K, 10-Q, transcripts",
+                  desc: "Upload any SEC filing or earnings document. Folio accepts PDFs, text files, and DOCX. The document is temporarily processed and never stored permanently.",
+                  out: "Raw document"
+                },
+                {
+                  num: "02", label: "Extract", sub: "Section keyword matching",
+                  desc: "Folio scans the document for key sections — business overview, competition, revenue drivers, risk factors — using keyword matching to locate and extract the most analytically relevant content.",
+                  out: "Structured text"
+                },
+                {
+                  num: "03", label: "Enrich", sub: "Yahoo Finance API",
+                  desc: "Using the company ticker, Folio pulls live market data: current price, market cap, P/E ratios, margins, free cash flow, 52-week range, analyst targets, and peer financials.",
+                  out: "Financial data"
+                },
+                {
+                  num: "04", label: "Analyze", sub: "Claude (Anthropic)",
+                  desc: "Claude synthesizes the extracted filing content and live market data into a structured investment thesis — evaluating valuation, competitive positioning, risks, and forming a recommendation.",
+                  out: "Investment thesis"
+                },
+                {
+                  num: "05", label: "Report", sub: "Institutional memo",
+                  desc: "The output is a comprehensive equity research memo with executive summary, bull/base/bear cases, peer benchmarking, revenue charts, investment signals, and a scored BUY, HOLD, or AVOID rating.",
+                  out: "Full report"
+                },
               ].map((step, i) => (
-                <div key={step.num} style={{ display: "flex", alignItems: "center", flex: i < 4 ? "1" : "none" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minWidth: 100 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                <div key={step.num} style={{ display: "flex", alignItems: "flex-start", flex: 1 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, padding: "0 8px" }}>
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10, flexShrink: 0 }}>
                       <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#fff", letterSpacing: "0.06em" }}>{step.num}</span>
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: "#111", marginBottom: 4 }}>{step.label}</div>
-                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: "0.04em", lineHeight: 1.5 }}>{step.sub}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: "#111", marginBottom: 4, textAlign: "center" }}>{step.label}</div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: "0.04em", lineHeight: 1.5, marginBottom: 10, textAlign: "center" }}>{step.sub}</div>
+                    <div style={{ fontSize: 11, color: "#666", lineHeight: 1.7, textAlign: "center", marginBottom: 12 }}>{step.desc}</div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#fff", background: "#111", padding: "3px 10px", borderRadius: 3, letterSpacing: "0.06em" }}>→ {step.out}</div>
                   </div>
-                  {i < 4 && <div style={{ flex: 1, height: 0.5, background: "#ddd", margin: "0 8px 28px" }} />}
+                  {i < 4 && <div style={{ width: 0.5, background: "#eee", alignSelf: "stretch", margin: "0 4px", flexShrink: 0 }} />}
                 </div>
               ))}
             </div>
