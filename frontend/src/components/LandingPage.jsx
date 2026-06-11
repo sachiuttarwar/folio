@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 export default function LandingPage({ onStart }) {
+  const [showWorkflow, setShowWorkflow] = useState(false);
   const steps = [
     { num: "01", title: "Upload Filings", desc: "10-K, 10-Q, transcripts, or presentations" },
     { num: "02", title: "Company Details", desc: "Ticker, industry, research parameters" },
@@ -22,8 +25,86 @@ export default function LandingPage({ onStart }) {
         <button onClick={onStart} style={{ background: "#111", color: "#faf8f4", border: "none", padding: "12px 32px", borderRadius: 4, fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: "0.02em" }}>
           New Report
         </button>
-
+        <button onClick={() => setShowWorkflow(true)} style={{ background: "transparent", color: "#555", border: "0.5px solid #d0ccc4", padding: "12px 32px", borderRadius: 4, fontFamily: "'Inter', sans-serif", fontSize: 13, cursor: "pointer", letterSpacing: "0.02em" }}>
+          How It Works
+        </button>
       </div>
+
+      {showWorkflow && (
+        <div onClick={() => setShowWorkflow(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 12, padding: "44px 48px", maxWidth: 860, width: "100%", maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
+            <button onClick={() => setShowWorkflow(false)} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", fontSize: 18, color: "#aaa", cursor: "pointer" }}>✕</button>
+
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 8 }}>Folio · Research Infrastructure</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: "#111", marginBottom: 40 }}>How It Works</div>
+
+            {/* High-level flow */}
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 44, overflowX: "auto" }}>
+              {[
+                { num: "01", label: "Upload", sub: "10-K, 10-Q, transcripts" },
+                { num: "02", label: "Extract", sub: "AI parses key sections" },
+                { num: "03", label: "Enrich", sub: "Live market data pulled" },
+                { num: "04", label: "Analyze", sub: "Claude synthesizes thesis" },
+                { num: "05", label: "Report", sub: "Institutional memo output" },
+              ].map((step, i) => (
+                <div key={step.num} style={{ display: "flex", alignItems: "center", flex: i < 4 ? "1" : "none" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minWidth: 100 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#fff", letterSpacing: "0.06em" }}>{step.num}</span>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: "#111", marginBottom: 4 }}>{step.label}</div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: "0.04em", lineHeight: 1.5 }}>{step.sub}</div>
+                  </div>
+                  {i < 4 && <div style={{ flex: 1, height: 0.5, background: "#ddd", margin: "0 8px 28px" }} />}
+                </div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ borderTop: "0.5px solid #eee", paddingTop: 32, marginBottom: 24 }}>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 20 }}>Data Sources & Outputs</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                {[
+                  {
+                    tag: "INPUT", tagColor: "#7a5a10", tagBg: "#fdf8ec",
+                    label: "SEC Filing (10-K / 10-Q)",
+                    items: ["Business overview & competitive landscape", "Risk factors & revenue segments", "Management discussion & analysis", "Key sections extracted by keyword matching"]
+                  },
+                  {
+                    tag: "LIVE", tagColor: "#0f6e56", tagBg: "#e1f5ee",
+                    label: "Yahoo Finance (Real-time)",
+                    items: ["Price, market cap, P/E, forward P/E", "Revenue growth, margins, FCF, ROE", "52-week range & analyst price targets", "Peer benchmarking across 5+ companies"]
+                  },
+                  {
+                    tag: "PROCESSING", tagColor: "#3a4a7a", tagBg: "#f0f2fa",
+                    label: "Claude AI (Anthropic)",
+                    items: ["Synthesizes documents into investment thesis", "Generates bull, base & bear case scenarios", "Scores investment signals & recommendation", "Produces BUY, HOLD, or AVOID decision"]
+                  },
+                  {
+                    tag: "OUTPUT", tagColor: "#1a6b3a", tagBg: "#f0f9f4",
+                    label: "Investment Report",
+                    items: ["Executive summary & financial analysis", "Peer comparison & revenue/margin charts", "Investment signals & valuation discussion", "Investment framework scorecard"]
+                  },
+                ].map((card) => (
+                  <div key={card.label} style={{ background: "#faf8f4", border: "0.5px solid #e8e4dc", borderRadius: 8, padding: "16px 18px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: card.tagColor, background: card.tagBg, padding: "2px 8px", borderRadius: 3, letterSpacing: "0.08em" }}>{card.tag}</span>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: "#111" }}>{card.label}</span>
+                    </div>
+                    {card.items.map((item, i) => (
+                      <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#888", lineHeight: 1.8 }}>{item}</div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ padding: "10px 14px", background: "#f5f3ef", borderRadius: 6, fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "#aaa", lineHeight: 1.6, letterSpacing: "0.04em" }}>
+              FOLIO · Reports are AI-generated using uploaded filings and live market data. For informational purposes only.
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, maxWidth: 680, width: "100%", border: "0.5px solid #ddd", borderRadius: 8, overflow: "hidden" }}>
         {steps.map((s, i) => (
           <div key={s.num} style={{ background: "#fff", padding: "20px 18px", borderRight: i < 3 ? "0.5px solid #e8e4dc" : "none", display: "flex", flexDirection: "column", gap: 8, textAlign: "left" }}>
